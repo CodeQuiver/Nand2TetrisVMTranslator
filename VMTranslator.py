@@ -20,6 +20,8 @@ sub_comms = {
     "dec1save": "@SP\nAM=M-1\nM=D",
     "dec2save": "@SP\nM=M-1\nAM=M-1\nM=D",
     "inc": "@SP\nM=M+1",
+    "dec": "@SP\nM=M-1",
+    "read_top_stack_to_D": "@SP\nA=M-1\nD=M",
     "setup2vals": "@SP\nD=M-1\nA=D-1\nD=M\n@SP\nA=M-1",
     "push_val_in_D_to_stack": "D=M\n@SP\nA=M\nM=D",
 }
@@ -34,7 +36,7 @@ arith_comms = {
 }
 
 
-def branched_logic(counter, command):
+def arith_comparison(counter, command):
     # uses a counter to make sure all the tags are unique
     branched_logic_comms = {
         "eq": f"{sub_comms['setup2vals']}\nD=D-M\n@EQ_TRUE_{counter}\nD;JEQ\nD=0\n@EQ_SAVE_{counter}\n0;JMP\n(EQ_TRUE_{counter})\nD=-1\n(EQ_SAVE_{counter})\n{sub_comms['dec2save']}\n{sub_comms['inc']}",
@@ -102,24 +104,38 @@ def translate_line(input: str, counter: int):
 
     # write_arithmetic(command: str)
     if len(element_list) == 1:
+        # arithmetic commands
         if command in ("eq", "gt", "lt"):
-            return branched_logic(counter, command)
+            return arith_comparison(counter, command)
         else:
             return arith_comms[command]
     elif len(element_list) > 1:
-        arg1 = element_list[1]
-        arg2int = element_list[2]
+        if len(element_list) == 2:
+            # branching or label command
+            label = element_list[1]
 
-        # write_push_pop(command: str, segment: str, index: int)
-        if command == "push":
-            # push constant i
-            if arg1 == "constant":
-                return push_constant(arg2int)
-            # push segment i
-            else:
-                return push_to_stack(arg1, int(arg2int))
-        elif command == "pop":
-            return pop_to_memory(arg1, int(arg2int))
+            if command == "label":
+                return f"({label})"
+            elif command == "goto":
+                return f"@{label}\n0;JMP"
+            elif command == "if-goto":
+                return f"{sub_comms['read_top_stack_to_D']}\n@{label}\nD;JGT"
+
+        elif len(element_list) == 3:
+            # push or pop memory handling command
+            arg1 = element_list[1]
+            arg2int = element_list[2]
+
+            # write_push_pop(command: str, segment: str, index: int)
+            if command == "push":
+                # push constant i
+                if arg1 == "constant":
+                    return push_constant(arg2int)
+                # push segment i
+                else:
+                    return push_to_stack(arg1, int(arg2int))
+            elif command == "pop":
+                return pop_to_memory(arg1, int(arg2int))
     else:
         return ""
 
