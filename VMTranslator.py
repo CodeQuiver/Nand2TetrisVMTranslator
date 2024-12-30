@@ -21,7 +21,7 @@ sub_comms = {
     "dec2save": "@SP\nM=M-1\nAM=M-1\nM=D",
     "inc": "@SP\nM=M+1",
     "dec": "@SP\nM=M-1",
-    "read_top_stack_to_D": "@SP\nA=M-1\nD=M",
+    "pop_top_stack_to_D": "@SP\nAM=M-1\nD=M",
     "setup2vals": "@SP\nD=M-1\nA=D-1\nD=M\n@SP\nA=M-1",
     "push_val_in_D_to_stack": "D=M\n@SP\nA=M\nM=D",
 }
@@ -119,7 +119,8 @@ def translate_line(input: str, counter: int):
             elif command == "goto":
                 return f"@{label}\n0;JMP"
             elif command == "if-goto":
-                return f"{sub_comms['read_top_stack_to_D']}\n@{label}\nD;JGT"
+                # NOTE- spec wants the top stack value to be popped, not just read, when checked for the "if" here
+                return f"{sub_comms['pop_top_stack_to_D']}\n@{label}\nD;JGT"
 
         elif len(element_list) == 3:
             # push or pop memory handling command
@@ -154,8 +155,8 @@ def main(input_file):
     output_filename = f"{pre}.asm"
 
     with open(input_file, mode="r") as file:
-        clean_lines = [
-            line.strip(" \n\t")
+        lines = [
+            line
             for line in file
             if line and (not line.isspace()) and (not line.startswith("//"))
         ]
@@ -165,10 +166,11 @@ def main(input_file):
     counter = 0
 
     with open(output_filename, "w") as output_file:
-        for line in clean_lines:
-            print(f"in: {line}")
+        for line in lines:
+            clean_line = line.split("//")[0].strip(" \n\t")
+            print(f"in: {clean_line}")
             # process each line with parser and code_writer
-            output_line = translate_line(line, counter)
+            output_line = translate_line(clean_line, counter)
             counter = counter + 1
 
             # write final output string to output file '.asm'
