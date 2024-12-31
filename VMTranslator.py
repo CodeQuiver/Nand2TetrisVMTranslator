@@ -108,7 +108,12 @@ def translate_line(input: str, counter: int):
         if command in ("eq", "gt", "lt"):
             return arith_comparison(counter, command)
         else:
-            return arith_comms[command]
+            try:
+                return arith_comms[command]
+            except KeyError:
+                raise KeyError(
+                    f'{command} not found in arithmetic commands for input line "{input}" at count "{counter}"'
+                )
     elif len(element_list) > 1:
         if len(element_list) == 2:
             # branching or label command
@@ -156,28 +161,29 @@ def main(input_file):
 
     with open(input_file, mode="r") as file:
         lines = [
-            line
+            line.split("//")[0].strip(" \n\t")
             for line in file
             if line and (not line.isspace()) and (not line.startswith("//"))
         ]
     # loop through each line, ignoring white space and comments
-    # TODO- strip out inline comments
+
+    # filtered lines may output empty lines so need second filter round
+    clean_lines = [line for line in lines if line and (not line.isspace())]
 
     counter = 0
 
     with open(output_filename, "w") as output_file:
-        for line in lines:
-            clean_line = line.split("//")[0].strip(" \n\t")
-            print(f"in: {clean_line}")
+        for line in clean_lines:
+            # print(f"in: {line}")
             # process each line with parser and code_writer
-            output_line = translate_line(clean_line, counter)
+            output_line = translate_line(line, counter)
             counter = counter + 1
 
             # write final output string to output file '.asm'
             # if output_line:
             output_final_line = f"{output_line}\n"
 
-            print(f"out: {output_final_line}")
+            # print(f"out: {output_final_line}")
             output_file.write(output_final_line)
 
     return "DONE!"
