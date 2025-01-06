@@ -95,6 +95,31 @@ def pop_to_memory(segment: str, index: int):
         return f"{calc_mem_location}\n{get_from_stack}\n{save_data_in_mem}"
 
 
+def function_definition(name: str, nVars: int):
+    # TODO- do I need to include some disambiguation here like filename?
+    # Or is it just the job of the coder to not use identical function names? Maybe...
+    result = f"({name})"
+
+    # initializing the local vars to 0 and incrementing SP
+    for i in range(nVars):
+        # push constant 0
+        # partial_1 = push_constant(0)
+        # # pop local i
+        # # pop normally decrements SP so probably need to custom code this
+        # partial_2 = pop_to_memory("local", i)
+        # result += f"\n{partial_1}\n{partial_2}"
+
+        # I can just use SP for this since it starts out the same as LCL
+        result += f"\n@0\nD=A\n@SP\nM=D\n{sub_comms['inc']}"
+
+    return result
+
+
+def return_command():
+    """Handles all the required pieces of a return statement"""
+    return
+
+
 # Main Logic
 def translate_line(input: str, counter: int):
     """accepts single line of input, uses it to generate ASM code for the command"""
@@ -142,6 +167,8 @@ def translate_line(input: str, counter: int):
                     return push_to_stack(arg1, int(arg2int))
             elif command == "pop":
                 return pop_to_memory(arg1, int(arg2int))
+            elif command == "function":
+                return function_definition(name=arg1, nVars=arg2int)
     else:
         return ""
 
