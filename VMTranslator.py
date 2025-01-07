@@ -109,8 +109,8 @@ def function_definition(name: str, nVars: int):
         # partial_2 = pop_to_memory("local", i)
         # result += f"\n{partial_1}\n{partial_2}"
 
-        # I can just use SP for this since it starts out the same as LCL
-        result += f"\n@0\nD=A\n@SP\nM=D\n{sub_comms['inc']}"
+        # I can just use SP for this since it starts out the same as LCL and we want it incremented anyway
+        result += f"\n@0\nD=A\n@SP\nA=M\nM=D\n{sub_comms['inc']}"
 
     return result
 
@@ -134,7 +134,7 @@ def return_command():
     reset_lcl = "@R13\nMD=M-1\n@LCL\nM=D"
 
     # goto return address stored in R14 (@returnaddress\n 0;JMP)
-    goto_retaddr = "@R14\n0;JMP"
+    goto_retaddr = "@R14\nA=M\n0;JMP"
 
     result = f"{store_endframe}\n{store_retaddr}\n{pop_to_arg}\n{reset_sp}\n"
     result += f"{reset_this}\n{reset_that}\n{reset_arg}\n{reset_lcl}\n{goto_retaddr}"
