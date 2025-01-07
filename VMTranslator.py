@@ -117,24 +117,29 @@ def function_definition(name: str, nVars: int):
 
 def return_command():
     """Handles all the required pieces of a return statement"""
-    # # store LCL mem value in R13 as "endframe"
-    # "@LCL\nD=M\n@R13\nM=D"
-    # # retrieve return address from (endframe - 5) location- store in R14
-    # "@5\nD=A\n@R13\nD=M-D\nA=D\nD=M\n@R14\nM=D"
-    # # ARG = pop() (pop top of stack and put val in ARG location)
-    # pop_to_arg = pop_to_memory(segment="argument", index=0)
-    # # reset stored pointer values back
-    # # SP
-    # "@ARG\nD=M\n@SP\nM=D+1"
-    # # THIS, THAT
-    # # note I'm decrementing each time to avoid math of -1 -2 -3 -4 later
-    # "@R13\nMD=M-1\n@THAT\nM=D"
-    # "@R13\nMD=M-1\n@THIS\nM=D"
-    # "@R13\nMD=M-1\n@ARG\nM=D"
-    # "@R13\nMD=M-1\n@LCL\nM=D"
+    # store LCL mem value in R13 as "endframe"
+    store_endframe = "@LCL\nD=M\n@R13\nM=D"
+    # retrieve return address from (endframe - 5) location- store in R14
+    store_retaddr = "@5\nD=A\n@R13\nD=M-D\nA=D\nD=M\n@R14\nM=D"
+    # ARG = pop() (pop top of stack and put val in ARG location)
+    pop_to_arg = pop_to_memory(segment="argument", index=0)
+    # reset stored pointer values back
+    # SP
+    reset_sp = "@ARG\nD=M\n@SP\nM=D+1"
+    # THIS, THAT
+    # note I'm decrementing each time to avoid math of -1 -2 -3 -4 later
+    reset_this = "@R13\nMD=M-1\n@THAT\nM=D"
+    reset_that = "@R13\nMD=M-1\n@THIS\nM=D"
+    reset_arg = "@R13\nMD=M-1\n@ARG\nM=D"
+    reset_lcl = "@R13\nMD=M-1\n@LCL\nM=D"
 
-    # goto return address (@returnaddress\n 0;JMP)
-    return
+    # goto return address stored in R14 (@returnaddress\n 0;JMP)
+    goto_retaddr = "@R14\n0;JMP"
+
+    result = f"{store_endframe}\n{store_retaddr}\n{pop_to_arg}\n{reset_sp}\n"
+    result += f"{reset_this}\n{reset_that}\n{reset_arg}\n{reset_lcl}"
+
+    return result
 
 
 # Main Logic
@@ -149,6 +154,8 @@ def translate_line(input: str, counter: int):
         # arithmetic commands
         if command in ("eq", "gt", "lt"):
             return arith_comparison(counter, command)
+        elif command == "return":
+            return return_command()
         else:
             try:
                 return arith_comms[command]
