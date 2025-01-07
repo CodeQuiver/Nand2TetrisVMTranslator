@@ -179,7 +179,7 @@ def translate_line(input: str, counter: int):
         elif len(element_list) == 3:
             # push or pop memory handling command
             arg1 = element_list[1]
-            arg2int = element_list[2]
+            arg2int = int(element_list[2])
 
             # write_push_pop(command: str, segment: str, index: int)
             if command == "push":
@@ -188,9 +188,9 @@ def translate_line(input: str, counter: int):
                     return push_constant(arg2int)
                 # push segment i
                 else:
-                    return push_to_stack(arg1, int(arg2int))
+                    return push_to_stack(arg1, arg2int)
             elif command == "pop":
-                return pop_to_memory(arg1, int(arg2int))
+                return pop_to_memory(arg1, arg2int)
             elif command == "function":
                 return function_definition(name=arg1, nVars=arg2int)
     else:
