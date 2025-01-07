@@ -120,8 +120,8 @@ def return_command():
     # store LCL mem value in R13 as "endframe"
     store_endframe = "@LCL\nD=M\n@R13\nM=D"
     # retrieve return address from (endframe - 5) location- store in R14
-    store_retaddr = "@5\nD=A\n@R13\nD=M-D\nA=D\nD=M\n@R14\nM=D"
-    # ARG = pop() (pop top of stack and put val in ARG location)
+    store_retaddr = "@5\nD=A\n@R13\nA=M-D\nD=M\n@R14\nM=D"
+    # ARG = pop() (pop top of stack and put val in ARG memory segment location)
     pop_to_arg = pop_to_memory(segment="argument", index=0)
     # reset stored pointer values back
     # SP
@@ -137,7 +137,7 @@ def return_command():
     goto_retaddr = "@R14\n0;JMP"
 
     result = f"{store_endframe}\n{store_retaddr}\n{pop_to_arg}\n{reset_sp}\n"
-    result += f"{reset_this}\n{reset_that}\n{reset_arg}\n{reset_lcl}"
+    result += f"{reset_this}\n{reset_that}\n{reset_arg}\n{reset_lcl}\n{goto_retaddr}"
 
     return result
 
