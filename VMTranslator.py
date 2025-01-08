@@ -194,19 +194,18 @@ def translate_line(input: str, counter: int):
         return ""
 
 
-def main(input_file):
-    """Translates a provided '.vm' file written in hack VM code
-    into a '.asm' file in the hack assembly language.
+def translate_file(input_file, output_filename: str, counter: int):
+    """
+    Summary: translates entire file and writes output to specified output filename
 
     Args:
-        input_file (str): input file 'filename.vm'
+        input_file (file): .vm file to read
+        output_filename (str): name of file to write into, will create new if doesn't exist and won't override existing lines
+        counter (int): iterator to use as needed to prevent label overlap, also coincides with input line count for logs
 
-    Returns:
-        - generates and saves output file 'filename.asm'
+    Return:
+        counter (int): updated counter to keep iterating in next file as needed
     """
-    pre, ext = os.path.splitext(input_file)
-    output_filename = f"{pre}.asm"
-
     with open(input_file, mode="r") as file:
         lines = [
             line.split("//")[0].strip(" \n\t")
@@ -217,8 +216,6 @@ def main(input_file):
 
     # filtered lines may output empty lines so need second filter round
     clean_lines = [line for line in lines if line and (not line.isspace())]
-
-    counter = 0
 
     with open(output_filename, "w") as output_file:
         for line in clean_lines:
@@ -233,6 +230,31 @@ def main(input_file):
 
             # print(f"out: {output_final_line}")
             output_file.write(output_final_line)
+
+    return counter
+
+
+def main(input_path):
+    """Translates a provided '.vm' file or directory of files written in hack VM code
+    into a '.asm' file in the hack assembly language.
+
+    Args:
+        input_path (str): input file 'filename.vm' or directory 'dirname' or 'dirname/'
+
+    Returns:
+        - generates and saves output file 'filename.asm'
+    """
+    pre, ext = os.path.splitext(input_path)
+    output_filename = f"{pre}.asm"
+    counter = 0
+
+    # counter return is really to keep it iterating while ensuring scope stays clean
+    counter = translate_file(input_path, output_filename, counter)
+
+    # TODO- determine if working with one file or directory
+    # If dir,
+    # 1. add bootstrap code and
+    # 2.loop through each .vm file
 
     return "DONE!"
 
