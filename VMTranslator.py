@@ -128,16 +128,16 @@ def return_command():
     reset_sp = "@ARG\nD=M\n@SP\nM=D+1"
     # THIS, THAT
     # note I'm decrementing each time to avoid math of -1 -2 -3 -4 later
-    reset_this = "@R13\nMD=M-1\n@THAT\nM=D"
-    reset_that = "@R13\nMD=M-1\n@THIS\nM=D"
-    reset_arg = "@R13\nMD=M-1\n@ARG\nM=D"
-    reset_lcl = "@R13\nMD=M-1\n@LCL\nM=D"
+    reset_that = "@R13\nA=M-1\nD=M\n@THAT\nM=D"
+    reset_this = "@2\nD=A\n@R13\nA=M-D\nD=M\n@THIS\nM=D"
+    reset_arg = "@3\nD=A\n@R13\nA=M-D\nD=M\n@ARG\nM=D"
+    reset_lcl = "@4\nD=A\n@R13\nA=M-D\nD=M\n@LCL\nM=D"
 
     # goto return address stored in R14 (@returnaddress\n 0;JMP)
     goto_retaddr = "@R14\nA=M\n0;JMP"
 
     result = f"{store_endframe}\n{store_retaddr}\n{pop_to_arg}\n{reset_sp}\n"
-    result += f"{reset_this}\n{reset_that}\n{reset_arg}\n{reset_lcl}\n{goto_retaddr}"
+    result += f"{reset_that}\n{reset_this}\n{reset_arg}\n{reset_lcl}\n{goto_retaddr}"
 
     return result
 
