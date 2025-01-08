@@ -117,24 +117,21 @@ def function_definition(name: str, nVars: int):
 
 def return_command():
     """Handles all the required pieces of a return statement"""
-    # store LCL mem value in R13 as "endframe"
-    store_endframe = "@LCL\nD=M\n@R13\nM=D"
-    # retrieve return address from (endframe - 5) location- store in R14
-    store_retaddr = "@5\nD=A\n@R13\nA=M-D\nD=M\n@R14\nM=D"
+    # store LCL mem value in @FRAME
+    store_endframe = "@LCL\nD=M\n@FRAME\nM=D"
+    # retrieve return address from (endframe - 5) location- store in RET
+    store_retaddr = "@5\nD=A\n@FRAME\nA=M-D\nD=M\n@RET\nM=D"
     # ARG = pop() (pop top of stack and put val in ARG memory segment location)
     pop_to_arg = pop_to_memory(segment="argument", index=0)
     # reset stored pointer values back
-    # SP
     reset_sp = "@ARG\nD=M\n@SP\nM=D+1"
-    # THIS, THAT
-    # note I'm decrementing each time to avoid math of -1 -2 -3 -4 later
-    reset_that = "@R13\nA=M-1\nD=M\n@THAT\nM=D"
-    reset_this = "@2\nD=A\n@R13\nA=M-D\nD=M\n@THIS\nM=D"
-    reset_arg = "@3\nD=A\n@R13\nA=M-D\nD=M\n@ARG\nM=D"
-    reset_lcl = "@4\nD=A\n@R13\nA=M-D\nD=M\n@LCL\nM=D"
+    reset_that = "@FRAME\nA=M-1\nD=M\n@THAT\nM=D"
+    reset_this = "@2\nD=A\n@FRAME\nA=M-D\nD=M\n@THIS\nM=D"
+    reset_arg = "@3\nD=A\n@FRAME\nA=M-D\nD=M\n@ARG\nM=D"
+    reset_lcl = "@4\nD=A\n@FRAME\nA=M-D\nD=M\n@LCL\nM=D"
 
-    # goto return address stored in R14 (@returnaddress\n 0;JMP)
-    goto_retaddr = "@R14\nA=M\n0;JMP"
+    # goto return address stored in @RET
+    goto_retaddr = "@RET\nA=M\n0;JMP"
 
     result = f"{store_endframe}\n{store_retaddr}\n{pop_to_arg}\n{reset_sp}\n"
     result += f"{reset_that}\n{reset_this}\n{reset_arg}\n{reset_lcl}\n{goto_retaddr}"
