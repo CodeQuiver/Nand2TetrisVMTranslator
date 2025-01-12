@@ -244,17 +244,42 @@ def main(input_path):
     Returns:
         - generates and saves output file 'filename.asm'
     """
-    pre, ext = os.path.splitext(input_path)
-    output_filename = f"{pre}.asm"
+
     counter = 0
 
-    # counter return is really to keep it iterating while ensuring scope stays clean
-    counter = translate_file(input_path, output_filename, counter)
+    if os.path.isfile(input_path) and input_path.endswith(".vm"):
+        pre, ext = os.path.splitext(input_path)
+        output_filename = f"{pre}.asm"
+        # counter return is really to keep it iterating while ensuring scope stays clean
+        counter = translate_file(input_path, output_filename, counter)
+        print(f"file '{file}' translated successfully; current counter: {counter}")
+    elif os.path.isdir(input_path):
+        # 1. add bootstrap code and
+        # 2. loop through each .vm file
+        all_files = os.listdir(input_path)
+        print(f"all_files list: {all_files}")
 
-    # TODO- determine if working with one file or directory
-    # If dir,
-    # 1. add bootstrap code and
-    # 2.loop through each .vm file
+        vm_files = [file for file in all_files if str(file).endswith("vm")]
+
+        print(f"vm_files list: {vm_files}")
+
+        output_filename = f"{os.path.dirname(input_path)}.asm"
+
+        for file in vm_files:
+            file_path = os.path.join(input_path, file)
+            print(f"translating file at: {file_path}")
+
+            counter = translate_file(file_path, output_filename, counter)
+            print(f"file '{file}' translated successfully; current counter: {counter}")
+
+        print(
+            f"All files in dir '{input_path}' translated successfully; current counter: {counter}"
+        )
+
+    else:
+        raise TypeError(
+            f"Input path provided is not a valid directory or .vm file: {input_path}"
+        )
 
     return "DONE!"
 
