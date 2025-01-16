@@ -181,7 +181,7 @@ def translate_line(input: str, counter: int):
                 return arith_comms[command]
             except KeyError:
                 raise KeyError(
-                    f'{command} not found in arithmetic commands for input line "{input}" at count "{counter}"'
+                    f"{command} not found in arithmetic commands for input line '{input}' at count '{counter}'"
                 )
     elif len(element_list) > 1:
         if len(element_list) == 2:
@@ -195,6 +195,10 @@ def translate_line(input: str, counter: int):
             elif command == "if-goto":
                 # NOTE- spec wants the top stack value to be popped, not just read, when checked for the "if" here
                 return f"{sub_comms['pop_top_stack_to_D']}\n@{label}\nD;JGT"
+            else:
+                raise RuntimeError(
+                    f"Failed to translate line {input} at counter {counter}"
+                )
 
         elif len(element_list) == 3:
             # push or pop memory handling command
@@ -213,8 +217,14 @@ def translate_line(input: str, counter: int):
                 return pop_to_memory(arg1, arg2int)
             elif command == "function":
                 return function_definition(name=arg1, n_vars=arg2int)
+            elif command == "call":
+                return call_command(func_name=arg1, n_args=arg2int)
+            else:
+                raise RuntimeError(
+                    f"Failed to translate line {input} at counter {counter}"
+                )
     else:
-        return ""
+        raise RuntimeError(f"Failed to translate line {input} at counter {counter}")
 
 
 def translate_file(input_file, output_filename: str, counter: int):
