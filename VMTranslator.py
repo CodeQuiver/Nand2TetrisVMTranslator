@@ -169,6 +169,10 @@ def translate_line(input: str, counter: int):
     element_list = re.split(" ", input)
     command = element_list[0]
 
+    # NOTE- Using so many if/else statements below because the auto-grader
+    # for the class doesn't support the "match" feature which would be preferred normally.
+    # Also not worrying about pretty code yet, refactors are later.
+
     # write_arithmetic(command: str)
     if len(element_list) == 1:
         # arithmetic commands
