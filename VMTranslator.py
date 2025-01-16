@@ -95,13 +95,22 @@ def pop_to_memory(segment: str, index: int):
         return f"{calc_mem_location}\n{get_from_stack}\n{save_data_in_mem}"
 
 
-def function_definition(name: str, nVars: int):
+def function_definition(name: str, n_vars: int):
+    """
+
+    Args:
+        name (str): function name
+        n_vars (int): number of local variables to initialize
+
+    Returns:
+        (str): the translated function definition and setup commands, in assembly
+    """
     # TODO- do I need to include some disambiguation here like filename?
     # Or is it just the job of the coder to not use identical function names? Maybe...
     result = f"({name})"
 
     # initializing the local vars to 0 and incrementing SP
-    for i in range(nVars):
+    for i in range(n_vars):
         # push constant 0
         # partial_1 = push_constant(0)
         # # pop local i
@@ -113,6 +122,20 @@ def function_definition(name: str, nVars: int):
         result += f"\n@0\nD=A\n@SP\nA=M\nM=D\n{sub_comms['inc']}"
 
     return result
+
+
+def call_command(func_name: str, n_args: int):
+    """Handles all required steps to call a function
+
+    Args:
+        func_name (str): name of function to call
+        n_vars (int): number of argument/ARG slots to create, check notes on details
+    Returns:
+        (str): translated call command in assembly
+    """
+    print(f"called 'call_command' with func_name '{func_name}' and n_args '{n_args}'")
+
+    return "TODO CALL"
 
 
 def return_command():
@@ -189,7 +212,7 @@ def translate_line(input: str, counter: int):
             elif command == "pop":
                 return pop_to_memory(arg1, arg2int)
             elif command == "function":
-                return function_definition(name=arg1, nVars=arg2int)
+                return function_definition(name=arg1, n_vars=arg2int)
     else:
         return ""
 
@@ -206,7 +229,7 @@ def translate_file(input_file, output_filename: str, counter: int):
     Return:
         counter (int): updated counter to keep iterating in next file as needed
     """
-    with open(input_file, mode="r") as file:
+    with open(input_file, "r") as file:
         lines = [
             line.split("//")[0].strip(" \n\t")
             for line in file
@@ -217,7 +240,7 @@ def translate_file(input_file, output_filename: str, counter: int):
     # filtered lines may output empty lines so need second filter round
     clean_lines = [line for line in lines if line and (not line.isspace())]
 
-    with open(output_filename, "w") as output_file:
+    with open(output_filename, "a") as output_file:
         for line in clean_lines:
             # print(f"in: {line}")
             # process each line with parser and code_writer
